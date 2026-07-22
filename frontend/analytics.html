@@ -452,7 +452,7 @@
     // Dynamically query API health to fetch current whitelisted count
     async function queryActiveWhitelist() {
       try {
-        const response = await fetch('http://localhost:8000/health');
+        const response = await fetch('https://ss-labz-currency-api.onrender.com/health');
         if (response.ok) {
           const data = await response.json();
           if (data && data.dynamic_whitelist_count) {

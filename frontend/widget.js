@@ -642,7 +642,7 @@
       const container = this.shadowRoot.querySelector('.widget-container');
       container.classList.add(`theme-${theme}`);
 
-      this.apiUrl = this.getAttribute('api-url') || 'http://localhost:8000';
+      this.apiUrl = this.getAttribute('api-url') || 'https://ss-labz-currency-api.onrender.com';
 
       this.amountInput.value = defaultAmount;
 

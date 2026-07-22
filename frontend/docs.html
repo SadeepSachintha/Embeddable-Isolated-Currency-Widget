@@ -308,7 +308,7 @@
 
 &lt;!-- 2. Inject component tag anywhere --&gt;
 &lt;currency-converter 
-  api-url="http://localhost:8000"
+  api-url="https://ss-labz-currency-api.onrender.com"
   default-base="USD"
   default-target="auto"&gt;
 &lt;/currency-converter&gt;</code></pre>
@@ -323,7 +323,7 @@
           <p>
             To register a new domain origin dynamically, send a `POST` request to `/whitelist` using the correct authorization header:
           </p>
-          <pre><code>curl -X POST http://localhost:8000/whitelist \
+          <pre><code>curl -X POST https://ss-labz-currency-api.onrender.com/whitelist \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: admin_secret" \
   -d '{"origin": "https://boutiquehotel.lk", "client_name": "Boutique Hotel Colombo"}'</code></pre>
@@ -354,7 +354,7 @@
                 <td><code>api-url</code></td>
                 <td>String</td>
                 <td>The baseline domain of your proxy backend.</td>
-                <td><code>"http://localhost:8000"</code></td>
+                <td><code>"https://ss-labz-currency-api.onrender.com"</code></td>
               </tr>
               <tr>
                 <td><code>theme</code></td>
