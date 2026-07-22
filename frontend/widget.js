@@ -36,6 +36,8 @@
         position: relative;
         overflow: hidden;
         transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
       }
 
       .widget-container:hover {
@@ -359,56 +361,78 @@
         pointer-events: none;
       }
 
-      /* ================= TREND GRAPH STYLING ================= */
+      /* ================= OPTION A: ACCORDION FOOTER STYLING ================= */
 
-      .trend-toggle-btn {
-        background: none;
+      .trend-footer-toggle {
+        width: calc(100% + 48px);
+        background: rgba(255, 255, 255, 0.015);
         border: none;
+        border-top: 1px solid var(--border-glass);
         color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         cursor: pointer;
-        padding: 4px;
+        padding: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 4px;
+        gap: 6px;
         transition: all 0.2s ease;
+        margin: 16px -24px -24px -24px;
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+        box-sizing: border-box;
       }
 
-      .trend-toggle-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
+      .trend-footer-toggle:hover {
+        background: rgba(255, 255, 255, 0.04);
         color: var(--primary);
       }
 
-      .widget-container.theme-light .trend-toggle-btn:hover {
-        background: rgba(0, 0, 0, 0.05);
-      }
-
-      .trend-toggle-btn svg {
+      .chevron-icon {
         width: 14px;
         height: 14px;
         fill: currentColor;
-        transition: transform 0.2s ease;
+        transition: transform 0.3s ease;
       }
 
-      .trend-toggle-btn.active svg {
-        transform: scale(1.15);
-        color: var(--primary);
+      .widget-container.expanded-trend .chevron-icon {
+        transform: rotate(180deg);
+      }
+
+      .widget-container.expanded-trend .trend-footer-toggle {
+        margin: 16px -24px 0 -24px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
       }
 
       .trend-container {
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.3s ease;
-        position: relative;
-        width: 100%;
+        width: calc(100% + 48px);
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
+        position: relative;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
       }
 
-      .trend-container.expanded {
-        max-height: 160px;
-        margin-top: 12px;
+      .widget-container.expanded-trend .trend-container {
+        max-height: 170px;
+        margin: 0 -24px -24px -24px;
+        padding: 16px 24px 24px 24px;
         border-top: 1px dashed var(--border-glass);
-        padding-top: 12px;
+      }
+
+      .widget-container.theme-light .trend-footer-toggle {
+        background: rgba(0, 0, 0, 0.005);
+      }
+      
+      .widget-container.theme-light .trend-footer-toggle:hover {
+        background: rgba(0, 0, 0, 0.03);
       }
 
       .trend-loader {
@@ -420,7 +444,7 @@
         border-top-color: var(--primary);
         animation: spin 0.8s linear infinite;
         position: absolute;
-        top: 50px;
+        top: 55px;
         left: calc(50% - 10px);
       }
 
@@ -521,22 +545,22 @@
         <div class="loader"></div>
         <div class="result-content" id="result-content">
           <p class="result-value" id="result-value">-</p>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 2px 0;">
-            <p class="result-rate" id="result-rate">Loading exchange rates...</p>
-            <button type="button" class="trend-toggle-btn" id="trend-toggle" title="Show/Hide 7-Day Trend">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 17.07l1.5 1.42z"/>
-              </svg>
-            </button>
-          </div>
+          <p class="result-rate" id="result-rate">Loading exchange rates...</p>
           <p class="result-source" id="result-source"></p>
         </div>
+      </div>
 
-        <div class="trend-container" id="trend-container">
-          <div class="trend-loader"></div>
-          <div class="trend-chart-wrapper" id="trend-chart-wrapper">
-            <svg id="trend-svg" viewBox="0 0 320 130" width="100%" height="130"></svg>
-          </div>
+      <button type="button" class="trend-footer-toggle" id="trend-toggle" title="Show/Hide 7-Day Trend">
+        <span>Show 7-Day Trend</span>
+        <svg class="chevron-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+        </svg>
+      </button>
+
+      <div class="trend-container" id="trend-container">
+        <div class="trend-loader"></div>
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+          <svg id="trend-svg" viewBox="0 0 320 130" width="100%" height="130"></svg>
         </div>
       </div>
 
@@ -700,7 +724,8 @@
         this.updateUI(data);
 
         // If the trend chart is expanded, fetch history updates dynamically
-        if (this.trendContainer.classList.contains('expanded')) {
+        const container = this.shadowRoot.querySelector('.widget-container');
+        if (container.classList.contains('expanded-trend')) {
           this.fetchHistory();
         }
       } catch (err) {
@@ -730,13 +755,16 @@
     }
 
     toggleTrend() {
-      const isExpanded = this.trendContainer.classList.contains('expanded');
+      const container = this.shadowRoot.querySelector('.widget-container');
+      const isExpanded = container.classList.contains('expanded-trend');
+      const textSpan = this.trendToggle.querySelector('span');
+
       if (isExpanded) {
-        this.trendContainer.classList.remove('expanded');
-        this.trendToggle.classList.remove('active');
+        container.classList.remove('expanded-trend');
+        if (textSpan) textSpan.textContent = 'Show 7-Day Trend';
       } else {
-        this.trendContainer.classList.add('expanded');
-        this.trendToggle.classList.add('active');
+        container.classList.add('expanded-trend');
+        if (textSpan) textSpan.textContent = 'Hide 7-Day Trend';
         this.fetchHistory();
       }
     }
@@ -783,7 +811,6 @@
       const height = 130;
       const padding = { top: 20, bottom: 20, left: 35, right: 35 };
 
-      // Find Min/Max rates
       const rates = history.map(p => p.rate);
       let minRate = Math.min(...rates);
       let maxRate = Math.max(...rates);
@@ -806,11 +833,10 @@
         return { x, y, date: p.date, rate: p.rate };
       });
 
-      // SPLINE SMOOTHING ALGORITHM (Opposed-line tangents)
       const controlPoint = (current, previous, next, reverse) => {
         const p = previous || current;
         const n = next || current;
-        const smoothing = 0.15; // Smooth curve factor
+        const smoothing = 0.15;
         
         const lengthX = n.x - p.x;
         const lengthY = n.y - p.y;
@@ -823,7 +849,6 @@
         return [x, y];
       };
 
-      // SVG Definitions (gradient defs & filters)
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
       defs.innerHTML = `
         <linearGradient id="chart-gradient-${this.fromSelect.value}-${this.toSelect.value}" x1="0" y1="0" x2="0" y2="1">
@@ -850,7 +875,7 @@
         svg.appendChild(line);
       }
 
-      // Vertical anchor reference grid lines for data points
+      // Vertical reference anchor lines
       points.forEach((pt) => {
         const anchor = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         anchor.setAttribute('x1', pt.x);
@@ -861,7 +886,7 @@
         svg.appendChild(anchor);
       });
 
-      // Generate smooth bezier curve path coordinates
+      // Generate smooth bezier curve coordinates
       let dLine = `M ${points[0].x} ${points[0].y}`;
       for (let i = 0; i < points.length - 1; i++) {
         const cp1 = controlPoint(points[i], points[i-1], points[i+1], false);
@@ -871,13 +896,11 @@
       
       const dArea = `${dLine} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
-      // Render Area under curve
       const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       areaPath.setAttribute('d', dArea);
       areaPath.setAttribute('fill', `url(#chart-gradient-${this.fromSelect.value}-${this.toSelect.value})`);
       svg.appendChild(areaPath);
 
-      // Render Line path
       const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       linePath.setAttribute('d', dLine);
       linePath.setAttribute('fill', 'none');
@@ -888,7 +911,6 @@
       linePath.setAttribute('filter', 'url(#glow)');
       svg.appendChild(linePath);
 
-      // Render dot markers on start, middle, end points
       points.forEach((pt, idx) => {
         if (idx === 0 || idx === points.length - 1 || idx === Math.floor(points.length / 2)) {
           const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -907,11 +929,9 @@
         }
       });
 
-      // Labels: Min / Max rates labels
       const maxPt = points.reduce((prev, curr) => (prev.rate > curr.rate) ? prev : curr);
       const minPt = points.reduce((prev, curr) => (prev.rate < curr.rate) ? prev : curr);
 
-      // Max Rate text
       const maxText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       maxText.setAttribute('x', maxPt.x);
       maxText.setAttribute('y', maxPt.y - 6);
@@ -920,7 +940,6 @@
       maxText.textContent = maxPt.rate.toFixed(4);
       svg.appendChild(maxText);
 
-      // Min Rate text
       const minText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       minText.setAttribute('x', minPt.x);
       minText.setAttribute('y', minPt.y + 10);
@@ -929,7 +948,6 @@
       minText.textContent = minPt.rate.toFixed(4);
       svg.appendChild(minText);
 
-      // Start Date Label
       const startDateText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       startDateText.setAttribute('x', padding.left);
       startDateText.setAttribute('y', height - 4);
@@ -938,7 +956,6 @@
       startDateText.textContent = this.formatChartDate(points[0].date);
       svg.appendChild(startDateText);
 
-      // End Date Label
       const endDateText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       endDateText.setAttribute('x', width - padding.right);
       endDateText.setAttribute('y', height - 4);
@@ -947,7 +964,6 @@
       endDateText.textContent = this.formatChartDate(points[points.length - 1].date);
       svg.appendChild(endDateText);
       
-      // Source Label
       const sourceText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       sourceText.setAttribute('x', width / 2);
       sourceText.setAttribute('y', height - 4);
@@ -972,8 +988,12 @@
       this.resultValue.textContent = '-';
       this.resultRate.textContent = 'Conversion failed';
       this.resultSource.textContent = '';
-      this.trendContainer.classList.remove('expanded');
-      this.trendToggle.classList.remove('active');
+      
+      const container = this.shadowRoot.querySelector('.widget-container');
+      container.classList.remove('expanded-trend');
+      
+      const textSpan = this.trendToggle.querySelector('span');
+      if (textSpan) textSpan.textContent = 'Show 7-Day Trend';
     }
 
     hideError() {
