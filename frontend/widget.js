@@ -241,7 +241,7 @@
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
       }
 
-      /* Option element styling inside dark dropdown */
+      /* Option element styling inside dropdown */
       .currency-select option {
         background-color: #111827;
         color: #f3f4f6;
@@ -332,7 +332,7 @@
         border-top-color: var(--primary);
         animation: spin 0.8s linear infinite;
         position: absolute;
-        top: calc(50% - 12px);
+        top: 26px;
         left: calc(50% - 12px);
       }
 
@@ -357,6 +357,109 @@
         right: 14px;
         top: calc(50% - 4px);
         pointer-events: none;
+      }
+
+      /* ================= TREND GRAPH STYLING ================= */
+
+      .trend-toggle-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .trend-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--primary);
+      }
+
+      .widget-container.theme-light .trend-toggle-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .trend-toggle-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+        transition: transform 0.2s ease;
+      }
+
+      .trend-toggle-btn.active svg {
+        transform: scale(1.15);
+        color: var(--primary);
+      }
+
+      .trend-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.3s ease;
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .trend-container.expanded {
+        max-height: 160px;
+        margin-top: 12px;
+        border-top: 1px dashed var(--border-glass);
+        padding-top: 12px;
+      }
+
+      .trend-loader {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--primary);
+        animation: spin 0.8s linear infinite;
+        position: absolute;
+        top: 50px;
+        left: calc(50% - 10px);
+      }
+
+      .trend-container.loading .trend-loader {
+        display: block;
+      }
+
+      .trend-container.loading .trend-chart-wrapper {
+        opacity: 0.1;
+      }
+
+      .trend-chart-wrapper {
+        width: 100%;
+        height: 130px;
+        transition: opacity 0.2s ease;
+      }
+
+      #trend-svg text {
+        font-family: inherit;
+        font-size: 8px;
+        fill: var(--text-secondary);
+        user-select: none;
+      }
+
+      #trend-svg .grid-line {
+        stroke: var(--border-glass);
+        stroke-width: 0.8;
+        stroke-dasharray: 2,4;
+      }
+      
+      #trend-svg .axis-label {
+        font-size: 7.5px;
+        fill: var(--text-muted);
+      }
+      
+      #trend-svg .rate-value-label {
+        font-weight: 600;
+        font-size: 8.5px;
+        fill: var(--text-primary);
       }
 
       @media (max-width: 480px) {
@@ -410,8 +513,22 @@
         <div class="loader"></div>
         <div class="result-content" id="result-content">
           <p class="result-value" id="result-value">-</p>
-          <p class="result-rate" id="result-rate">Loading exchange rates...</p>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 2px 0;">
+            <p class="result-rate" id="result-rate">Loading exchange rates...</p>
+            <button type="button" class="trend-toggle-btn" id="trend-toggle" title="Show/Hide 7-Day Trend">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 17.07l1.5 1.42z"/>
+              </svg>
+            </button>
+          </div>
           <p class="result-source" id="result-source"></p>
+        </div>
+
+        <div class="trend-container" id="trend-container">
+          <div class="trend-loader"></div>
+          <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <svg id="trend-svg" viewBox="0 0 320 130" width="100%" height="130"></svg>
+          </div>
         </div>
       </div>
 
@@ -458,7 +575,13 @@
       this.resultSource = this.shadowRoot.getElementById('result-source');
       this.errorMsg = this.shadowRoot.getElementById('error-msg');
 
+      // Trend elements
+      this.trendToggle = this.shadowRoot.getElementById('trend-toggle');
+      this.trendContainer = this.shadowRoot.getElementById('trend-container');
+      this.trendSvg = this.shadowRoot.getElementById('trend-svg');
+
       this.debounceTimeout = null;
+      this.cachedHistoryData = null;
     }
 
     static get observedAttributes() {
@@ -469,11 +592,8 @@
       if (name === 'theme' && oldValue !== newValue) {
         const container = this.shadowRoot.querySelector('.widget-container');
         if (container) {
-          // Remove old theme classes
           const themes = ['dark', 'light', 'glass', 'midnight'];
           themes.forEach(t => container.classList.remove(`theme-${t}`));
-          
-          // Add new theme class
           if (newValue) {
             container.classList.add(`theme-${newValue.toLowerCase()}`);
           }
@@ -482,13 +602,11 @@
     }
 
     connectedCallback() {
-      // Load configurations from attributes or defaults
       const defaultAmount = this.getAttribute('default-amount') || '100';
       const defaultBase = (this.getAttribute('default-base') || 'USD').toUpperCase();
       const defaultTarget = (this.getAttribute('default-target') || 'LKR').toUpperCase();
       const theme = (this.getAttribute('theme') || 'dark').toLowerCase();
 
-      // Initialize theme class
       const container = this.shadowRoot.querySelector('.widget-container');
       container.classList.add(`theme-${theme}`);
 
@@ -501,9 +619,10 @@
 
       // Event Listeners
       this.amountInput.addEventListener('input', () => this.handleInputDebounce());
-      this.fromSelect.addEventListener('change', () => this.fetchConversion());
-      this.toSelect.addEventListener('change', () => this.fetchConversion());
+      this.fromSelect.addEventListener('change', () => this.handleCurrencyChange());
+      this.toSelect.addEventListener('change', () => this.handleCurrencyChange());
       this.swapBtn.addEventListener('click', () => this.swapCurrencies());
+      this.trendToggle.addEventListener('click', () => this.toggleTrend());
 
       // Initial Fetch
       this.fetchConversion();
@@ -532,6 +651,11 @@
       const temp = this.fromSelect.value;
       this.fromSelect.value = this.toSelect.value;
       this.toSelect.value = temp;
+      this.handleCurrencyChange();
+    }
+
+    handleCurrencyChange() {
+      this.cachedHistoryData = null; // Reset cache on currency changes
       this.fetchConversion();
     }
 
@@ -539,7 +663,7 @@
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
         this.fetchConversion();
-      }, 400); // 400ms debounce
+      }, 400);
     }
 
     async fetchConversion() {
@@ -566,6 +690,11 @@
 
         const data = await response.json();
         this.updateUI(data);
+
+        // If the trend chart is expanded, fetch history updates dynamically
+        if (this.trendContainer.classList.contains('expanded')) {
+          this.fetchHistory();
+        }
       } catch (err) {
         console.error('Currency converter error:', err);
         this.showError(`Error: ${err.message || 'Could not fetch rates from server'}`);
@@ -575,7 +704,6 @@
     }
 
     updateUI(data) {
-      // Format number display based on locale
       const formatter = new Intl.NumberFormat(navigator.language || 'en-US', {
         style: 'currency',
         currency: data.target,
@@ -593,12 +721,220 @@
       this.resultSource.textContent = `${baseAmountStr}${cacheInfo}`;
     }
 
+    toggleTrend() {
+      const isExpanded = this.trendContainer.classList.contains('expanded');
+      if (isExpanded) {
+        this.trendContainer.classList.remove('expanded');
+        this.trendToggle.classList.remove('active');
+      } else {
+        this.trendContainer.classList.add('expanded');
+        this.trendToggle.classList.add('active');
+        this.fetchHistory();
+      }
+    }
+
+    async fetchHistory() {
+      const base = this.fromSelect.value;
+      const target = this.toSelect.value;
+
+      if (this.cachedHistoryData && this.cachedHistoryData.base === base && this.cachedHistoryData.target === target) {
+        this.renderTrendChart(this.cachedHistoryData);
+        return;
+      }
+
+      this.trendContainer.classList.add('loading');
+      this.trendSvg.innerHTML = '';
+
+      try {
+        const url = `${this.apiUrl}/history?base=${base}&target=${target}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error('Could not fetch rates history');
+        }
+
+        const data = await response.json();
+        this.cachedHistoryData = data;
+        this.renderTrendChart(data);
+      } catch (err) {
+        console.error('History fetch error:', err);
+        this.trendSvg.innerHTML = `<text x="160" y="65" text-anchor="middle" fill="var(--accent-error)">Could not load trend data</text>`;
+      } finally {
+        this.trendContainer.classList.remove('loading');
+      }
+    }
+
+    renderTrendChart(data) {
+      const history = data.history;
+      if (!history || history.length === 0) return;
+
+      const svg = this.trendSvg;
+      svg.innerHTML = '';
+
+      const width = 320;
+      const height = 130;
+      const padding = { top: 20, bottom: 20, left: 35, right: 35 };
+
+      // Find Min/Max rates
+      const rates = history.map(p => p.rate);
+      let minRate = Math.min(...rates);
+      let maxRate = Math.max(...rates);
+
+      if (minRate === maxRate) {
+        minRate = minRate * 0.99;
+        maxRate = maxRate * 1.01;
+      }
+
+      const diff = maxRate - minRate;
+      const yMin = minRate - diff * 0.15;
+      const yMax = maxRate + diff * 0.15;
+
+      const chartW = width - padding.left - padding.right;
+      const chartH = height - padding.top - padding.bottom;
+
+      const points = history.map((p, i) => {
+        const x = padding.left + (i * (chartW / (history.length - 1)));
+        const y = padding.top + chartH - (((p.rate - yMin) / (yMax - yMin)) * chartH);
+        return { x, y, date: p.date, rate: p.rate };
+      });
+
+      // SVG Definitions (gradient defs)
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <linearGradient id="chart-gradient-${this.fromSelect.value}-${this.toSelect.value}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.25"></stop>
+          <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop>
+        </linearGradient>
+      `;
+      svg.appendChild(defs);
+
+      // Horizontal reference grid lines
+      const gridLevels = 3;
+      for (let i = 0; i < gridLevels; i++) {
+        const yGrid = padding.top + (i * (chartH / (gridLevels - 1)));
+        
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding.left);
+        line.setAttribute('y1', yGrid);
+        line.setAttribute('x2', width - padding.right);
+        line.setAttribute('y2', yGrid);
+        line.setAttribute('class', 'grid-line');
+        svg.appendChild(line);
+      }
+
+      // Generate polyline paths
+      let dLine = '';
+      let dArea = `M ${points[0].x} ${padding.top + chartH} `;
+
+      points.forEach((pt, idx) => {
+        const cmd = idx === 0 ? 'M' : 'L';
+        dLine += `${cmd} ${pt.x} ${pt.y} `;
+        dArea += `L ${pt.x} ${pt.y} `;
+      });
+      dArea += `L ${points[points.length - 1].x} ${padding.top + chartH} Z`;
+
+      // Render Area under curve
+      const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      areaPath.setAttribute('d', dArea);
+      areaPath.setAttribute('fill', `url(#chart-gradient-${this.fromSelect.value}-${this.toSelect.value})`);
+      svg.appendChild(areaPath);
+
+      // Render Line path
+      const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      linePath.setAttribute('d', dLine);
+      linePath.setAttribute('fill', 'none');
+      linePath.setAttribute('stroke', 'var(--primary)');
+      linePath.setAttribute('stroke-width', '2.5');
+      linePath.setAttribute('stroke-linecap', 'round');
+      linePath.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(linePath);
+
+      // Render dots
+      points.forEach((pt, idx) => {
+        if (idx === 0 || idx === points.length - 1 || idx === Math.floor(points.length / 2)) {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pt.x);
+          circle.setAttribute('cy', pt.y);
+          circle.setAttribute('r', '3.5');
+          circle.setAttribute('fill', 'var(--primary)');
+          circle.setAttribute('stroke', 'var(--bg-glass)');
+          circle.setAttribute('stroke-width', '1.5');
+          
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+          title.textContent = `${pt.date}: ${pt.rate.toFixed(4)}`;
+          circle.appendChild(title);
+          
+          svg.appendChild(circle);
+        }
+      });
+
+      // Labels: Min / Max rates labels
+      const maxPt = points.reduce((prev, curr) => (prev.rate > curr.rate) ? prev : curr);
+      const minPt = points.reduce((prev, curr) => (prev.rate < curr.rate) ? prev : curr);
+
+      // Max Rate text
+      const maxText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      maxText.setAttribute('x', maxPt.x);
+      maxText.setAttribute('y', maxPt.y - 6);
+      maxText.setAttribute('text-anchor', 'middle');
+      maxText.setAttribute('class', 'rate-value-label');
+      maxText.textContent = maxPt.rate.toFixed(4);
+      svg.appendChild(maxText);
+
+      // Min Rate text
+      const minText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      minText.setAttribute('x', minPt.x);
+      minText.setAttribute('y', minPt.y + 10);
+      minText.setAttribute('text-anchor', 'middle');
+      minText.setAttribute('class', 'rate-value-label');
+      minText.textContent = minPt.rate.toFixed(4);
+      svg.appendChild(minText);
+
+      // Start Date Label
+      const startDateText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      startDateText.setAttribute('x', padding.left);
+      startDateText.setAttribute('y', height - 4);
+      startDateText.setAttribute('text-anchor', 'start');
+      startDateText.setAttribute('class', 'axis-label');
+      startDateText.textContent = this.formatChartDate(points[0].date);
+      svg.appendChild(startDateText);
+
+      // End Date Label
+      const endDateText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      endDateText.setAttribute('x', width - padding.right);
+      endDateText.setAttribute('y', height - 4);
+      endDateText.setAttribute('text-anchor', 'end');
+      endDateText.setAttribute('class', 'axis-label');
+      endDateText.textContent = this.formatChartDate(points[points.length - 1].date);
+      svg.appendChild(endDateText);
+      
+      // Source Label
+      const sourceText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      sourceText.setAttribute('x', width / 2);
+      sourceText.setAttribute('y', height - 4);
+      sourceText.setAttribute('text-anchor', 'middle');
+      sourceText.setAttribute('class', 'axis-label');
+      sourceText.textContent = data.is_mock ? '7-Day Trend (Estimated)' : '7-Day Trend (Live)';
+      svg.appendChild(sourceText);
+    }
+
+    formatChartDate(dateStr) {
+      try {
+        const [_, month, day] = dateStr.split('-');
+        return `${month}/${day}`;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
     showError(message) {
       this.errorMsg.textContent = message;
       this.errorMsg.style.display = 'block';
       this.resultValue.textContent = '-';
       this.resultRate.textContent = 'Conversion failed';
       this.resultSource.textContent = '';
+      this.trendContainer.classList.remove('expanded');
+      this.trendToggle.classList.remove('active');
     }
 
     hideError() {
@@ -606,6 +942,5 @@
     }
   }
 
-  // Register Custom Element
   customElements.define('currency-converter', CurrencyConverter);
 })();
