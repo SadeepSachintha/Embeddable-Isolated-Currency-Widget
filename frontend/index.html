@@ -275,13 +275,13 @@
     </div>
 
     <div class="showcase-header">
-      <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600; margin: 0;">Preconfigured Presets & Customizable Styles</h2>
+      <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600; margin: 0;">Preconfigured Presets & Customizable Themes</h2>
     </div>
 
     <div class="showcase-grid">
       <!-- 1. Dark Theme -->
       <div class="widget-container-box">
-        <div class="widget-label">Dark Presets (Default)</div>
+        <div class="widget-label">Dark Preset</div>
         <currency-converter 
           api-url="http://localhost:8000" 
           theme="dark"
@@ -293,7 +293,7 @@
 
       <!-- 2. Light Theme -->
       <div class="widget-container-box">
-        <div class="widget-label">Light Presets</div>
+        <div class="widget-label">Light Preset</div>
         <currency-converter 
           api-url="http://localhost:8000" 
           theme="light"
@@ -331,7 +331,7 @@
 
       <!-- 5. Brand Custom variables overrides -->
       <div class="widget-container-box">
-        <div class="widget-label">Custom CSS Overrides (Hot Pink)</div>
+        <div class="widget-label">Custom CSS (Hot Pink)</div>
         <currency-converter 
           class="brand-custom-widget"
           api-url="http://localhost:8000" 
@@ -339,6 +339,18 @@
           default-amount="100" 
           default-base="USD" 
           default-target="LKR">
+        </currency-converter>
+      </div>
+
+      <!-- 6. Auto-Location Detection Preset -->
+      <div class="widget-container-box">
+        <div class="widget-label">Auto-Location Detection</div>
+        <currency-converter 
+          api-url="http://localhost:8000" 
+          theme="midnight"
+          default-amount="100" 
+          default-base="USD" 
+          default-target="auto">
         </currency-converter>
       </div>
     </div>

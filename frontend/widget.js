@@ -633,10 +633,10 @@
       }
     }
 
-    connectedCallback() {
+    async connectedCallback() {
       const defaultAmount = this.getAttribute('default-amount') || '100';
       const defaultBase = (this.getAttribute('default-base') || 'USD').toUpperCase();
-      const defaultTarget = (this.getAttribute('default-target') || 'LKR').toUpperCase();
+      let defaultTarget = this.getAttribute('default-target') || 'auto';
       const theme = (this.getAttribute('theme') || 'dark').toLowerCase();
 
       const container = this.shadowRoot.querySelector('.widget-container');
@@ -645,6 +645,11 @@
       this.apiUrl = this.getAttribute('api-url') || 'http://localhost:8000';
 
       this.amountInput.value = defaultAmount;
+
+      // Geolocation Target Currency Detection
+      if (defaultTarget.toLowerCase() === 'auto') {
+        defaultTarget = await this.detectLocalCurrency();
+      }
 
       // Populate Select Dropdowns
       this.populateDropdowns(defaultBase, defaultTarget);
@@ -658,6 +663,45 @@
 
       // Initial Fetch
       this.fetchConversion();
+    }
+
+    async detectLocalCurrency() {
+      const cacheKey = 'currency-converter-local-currency';
+      const cacheTimeKey = 'currency-converter-local-currency-timestamp';
+      
+      const cachedCurrency = localStorage.getItem(cacheKey);
+      const cachedTime = localStorage.getItem(cacheTimeKey);
+      const cacheTTL = 86400000; // 24 hours TTL
+
+      if (cachedCurrency && cachedTime && (Date.now() - parseInt(cachedTime, 10) < cacheTTL)) {
+        console.log(`Using cached visitor currency: ${cachedCurrency}`);
+        return cachedCurrency;
+      }
+
+      try {
+        console.log("Fetching visitor country geolocation...");
+        const response = await fetch('https://ipapi.co/json/');
+        if (!response.ok) {
+          throw new Error('Geolocation API failed');
+        }
+        const data = await response.json();
+        
+        if (data && data.currency) {
+          const detected = data.currency.toUpperCase();
+          const isSupported = currencies.some(c => c.code === detected);
+          
+          if (isSupported) {
+            localStorage.setItem(cacheKey, detected);
+            localStorage.setItem(cacheTimeKey, Date.now().toString());
+            console.log(`Auto-detected local currency: ${detected}`);
+            return detected;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to auto-detect local currency, falling back to LKR:', e);
+      }
+
+      return 'LKR'; // Sensible fallback
     }
 
     populateDropdowns(defaultBase, defaultTarget) {
