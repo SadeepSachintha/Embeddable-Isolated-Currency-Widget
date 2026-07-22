@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Portal - Widgets Embed Demos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.7);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #c7d2fe 0%, #818cf8 50%, #4f46e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      stroke: #818cf8;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-gray);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-white);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .badge {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      align-self: flex-start;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    p.lead {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text-gray);
+      margin: 0;
+    }
+
+    /* B2B Demo cases grid */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 30px;
+    }
+
+    .demo-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .demo-banner {
+      padding: 20px;
+      background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .demo-banner.light {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      color: #111827;
+    }
+
+    .demo-banner h3 {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .demo-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .booking-summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 8px;
+    }
+    
+    .demo-card.light-card {
+      background: #ffffff;
+      color: #1f2937;
+      border-color: #e5e7eb;
+    }
+
+    .demo-card.light-card .booking-summary-row {
+      border-bottom-color: #f3f4f6;
+    }
+
+    .demo-card.light-card .text-secondary {
+      color: #4b5563;
+    }
+
+    .price-tag {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .demo-card.light-card .price-tag {
+      color: #4f46e5;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 30px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <span>SS Labz Portal</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Dashboard</a>
+      <a href="widget-demo.html" class="nav-link active">Widgets</a>
+      <a href="analytics.html" class="nav-link">Analytics</a>
+      <a href="docs.html" class="nav-link">Docs</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="badge">Integration Demos</div>
+      <h1>Widget Embed Demos</h1>
+      <p class="lead">
+        See how the Web Component currency converter behaves inside simulated host layouts, showcasing independent themes and CSS custom property configurations.
+      </p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- Demo 1: Hotel Booking Confirmation Page (Light Theme Site) -->
+      <div class="demo-card light-card">
+        <div class="demo-banner light">
+          <h3>Boutique Hotel Booking</h3>
+          <span style="font-size: 0.8rem; font-weight: 600; padding: 4px 8px; background: #4f46e5; color: white; border-radius: 4px;">Light Theme Host</span>
+        </div>
+        <div class="demo-body">
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;">
+            Thank you for selecting your room at <strong>Boutique Hotel Colombo</strong>. Below is your booking summary.
+          </p>
+          <div>
+            <div class="booking-summary-row">
+              <span class="text-secondary">Room Type:</span>
+              <strong>Deluxe Ocean Suite</strong>
+            </div>
+            <div class="booking-summary-row" style="margin-top: 8px;">
+              <span class="text-secondary">Nights:</span>
+              <strong>4 Nights</strong>
+            </div>
+            <div class="booking-summary-row" style="margin-top: 8px;">
+              <span class="text-secondary">Total Cost:</span>
+              <strong class="price-tag">$720.00 USD</strong>
+            </div>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+            <p style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 600; color: #4b5563; text-transform: uppercase;">Convert to Local Currency:</p>
+            <!-- Embedded Light Theme Currency Widget -->
+            <currency-converter 
+              api-url="http://localhost:8000" 
+              theme="light"
+              default-amount="720" 
+              default-base="USD" 
+              default-target="LKR">
+            </currency-converter>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 2: SaaS Corporate checkout (Glass theme Site) -->
+      <div class="demo-card" style="background: linear-gradient(135deg, #100f24 0%, #1e1b4b 100%);">
+        <div class="demo-banner">
+          <h3>Corporate SaaS Checkout</h3>
+          <span style="font-size: 0.8rem; font-weight: 600; padding: 4px 8px; background: #818cf8; color: white; border-radius: 4px;">Glass Theme Host</span>
+        </div>
+        <div class="demo-body">
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-gray);">
+            Unlock full API access with the <strong>SS Labz Pro</strong> plan. Billed annually.
+          </p>
+          <div>
+            <div class="booking-summary-row">
+              <span style="color: var(--text-gray);">Plan:</span>
+              <strong>Pro Annual Subscription</strong>
+            </div>
+            <div class="booking-summary-row" style="margin-top: 8px;">
+              <span style="color: var(--text-gray);">Price:</span>
+              <strong class="price-tag" style="color: #818cf8;">$2,400.00 USD</strong>
+            </div>
+          </div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+            <p style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 600; color: var(--text-gray); text-transform: uppercase;">Compare Global Exchange Pricing:</p>
+            <!-- Embedded Glass Theme Currency Widget -->
+            <currency-converter 
+              api-url="http://localhost:8000" 
+              theme="glass"
+              default-amount="2400" 
+              default-base="USD" 
+              default-target="EUR">
+            </currency-converter>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 3: Corporate Invoicing Tool (Midnight Theme Custom Host) -->
+      <div class="demo-card" style="background: #020617;">
+        <div class="demo-banner" style="background: #0b1329;">
+          <h3>Corporate Travel Invoice</h3>
+          <span style="font-size: 0.8rem; font-weight: 600; padding: 4px 8px; background: #38bdf8; color: #020617; border-radius: 4px;">Midnight Theme Host</span>
+        </div>
+        <div class="demo-body">
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: #94a3b8;">
+            Client Invoice **#INV-2026-904**. Reimbursable corporate expenses.
+          </p>
+          <div>
+            <div class="booking-summary-row">
+              <span style="color: #94a3b8;">Expense Description:</span>
+              <strong>Business Flight Tickets (GBP)</strong>
+            </div>
+            <div class="booking-summary-row" style="margin-top: 8px;">
+              <span style="color: #94a3b8;">Total Invoice Due:</span>
+              <strong class="price-tag" style="color: #38bdf8;">£850.00 GBP</strong>
+            </div>
+          </div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+            <p style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Reimbursement Conversion:</p>
+            <!-- Embedded Midnight Theme Currency Widget -->
+            <currency-converter 
+              api-url="http://localhost:8000" 
+              theme="midnight"
+              default-amount="850" 
+              default-base="GBP" 
+              default-target="auto">
+            </currency-converter>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 SS Labz. All rights reserved.
+  </footer>
+
+  <!-- Include Widget Script -->
+  <script src="widget.js"></script>
+</body>
+</html>

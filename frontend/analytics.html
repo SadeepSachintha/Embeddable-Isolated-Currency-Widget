@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Portal - Proxy Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.05);
+      --accent-success: #10b981;
+      --accent-info: #06b6d4;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.7);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #c7d2fe 0%, #818cf8 50%, #4f46e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      stroke: #818cf8;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-gray);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-white);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .badge {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      align-self: flex-start;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    /* Analytics Dashboard Grid */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .metric-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .metric-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .metric-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .metric-change {
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .change-positive {
+      color: var(--accent-success);
+    }
+    
+    .change-info {
+      color: var(--accent-info);
+    }
+
+    /* Charts Row */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Bar chart SVG custom styling */
+    .bar-chart-svg rect {
+      rx: 4;
+      transition: fill 0.3s ease, opacity 0.3s ease;
+    }
+
+    .bar-chart-svg rect:hover {
+      fill: #818cf8;
+      opacity: 0.95;
+      cursor: pointer;
+    }
+
+    .bar-chart-svg text {
+      font-family: inherit;
+      font-size: 9px;
+      fill: var(--text-gray);
+    }
+
+    .bar-chart-svg .grid-line {
+      stroke: rgba(255, 255, 255, 0.05);
+      stroke-width: 1;
+    }
+
+    /* Legend items */
+    .legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* Domains List */
+    .domains-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .domain-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.9rem;
+    }
+
+    .domain-row:last-child {
+      border-bottom: none;
+    }
+
+    .domain-name {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 30px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <span>SS Labz Portal</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Dashboard</a>
+      <a href="widget-demo.html" class="nav-link">Widgets</a>
+      <a href="analytics.html" class="nav-link active">Analytics</a>
+      <a href="docs.html" class="nav-link">Docs</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="badge">Operational Dashboard</div>
+      <h1>Proxy API Analytics</h1>
+      <p class="lead">
+        Track real-time caching efficiencies, Monthly API operational savings, and client Whitelisting statistics.
+      </p>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="metrics-row">
+      <!-- Card 1 -->
+      <div class="metric-card">
+        <h4 class="metric-title">Cache Hit Rate</h4>
+        <p class="metric-value" style="color: var(--primary);">84.6%</p>
+        <div class="metric-change change-positive">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+          <span>+2.4% this week</span>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="metric-card">
+        <h4 class="metric-title">Cached Conversions</h4>
+        <p class="metric-value">12,854</p>
+        <div class="metric-change change-info">
+          <span>Out of 15,185 total calls</span>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="metric-card">
+        <h4 class="metric-title">Monthly Savings</h4>
+        <p class="metric-value" style="color: var(--accent-success);">$384.60</p>
+        <div class="metric-change change-positive">
+          <span>Saved 12,854 paid API keys requests</span>
+        </div>
+      </div>
+      <!-- Card 4 -->
+      <div class="metric-card">
+        <h4 class="metric-title">Whitelisted Clients</h4>
+        <p class="metric-value" id="whitelisted-counter">6 Domains</p>
+        <div class="metric-change change-info">
+          <span id="whitelist-subtext">Initialized with local dev ports</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts and Clients Row -->
+    <div class="charts-grid">
+      <!-- Column 1: API traffic chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">Hourly Traffic Distribution</h3>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: var(--primary);"></div>
+              <span>Cache Hits</span>
+            </div>
+            <div class="legend-color" style="background-color: rgba(99, 102, 241, 0.2); width: 12px; height: 12px; border-radius: 3px;"></div>
+            <span>API Misses</span>
+          </div>
+        </div>
+
+        <!-- Custom SVG Bar Chart -->
+        <div style="width: 100%; height: 200px;">
+          <svg class="bar-chart-svg" viewBox="0 0 500 200" width="100%" height="200">
+            <!-- Gridlines -->
+            <line x1="40" y1="20" x2="480" y2="20" class="grid-line"></line>
+            <line x1="40" y1="70" x2="480" y2="70" class="grid-line"></line>
+            <line x1="40" y1="120" x2="480" y2="120" class="grid-line"></line>
+            <line x1="40" y1="170" x2="480" y2="170" class="grid-line" style="stroke: rgba(255,255,255,0.1);"></line>
+
+            <!-- Y Axis Labels -->
+            <text x="15" y="23" text-anchor="start">100</text>
+            <text x="15" y="73" text-anchor="start">50</text>
+            <text x="15" y="123" text-anchor="start">25</text>
+            <text x="15" y="173" text-anchor="start">0</text>
+
+            <!-- Bars (Hour 00:00 to 20:00) -->
+            <!-- H1: 00:00 -->
+            <rect x="60" y="110" width="24" height="60" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="60" y="130" width="24" height="40" fill="var(--primary)"></rect>
+            <text x="72" y="185" text-anchor="middle">00:00</text>
+
+            <!-- H2: 04:00 -->
+            <rect x="130" y="130" width="24" height="40" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="130" y="145" width="24" height="25" fill="var(--primary)"></rect>
+            <text x="142" y="185" text-anchor="middle">04:00</text>
+
+            <!-- H3: 08:00 -->
+            <rect x="200" y="60" width="24" height="110" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="200" y="80" width="24" height="90" fill="var(--primary)"></rect>
+            <text x="212" y="185" text-anchor="middle">08:00</text>
+
+            <!-- H4: 12:00 -->
+            <rect x="270" y="30" width="24" height="140" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="270" y="50" width="24" height="120" fill="var(--primary)"></rect>
+            <text x="282" y="185" text-anchor="middle">12:00</text>
+
+            <!-- H5: 16:00 -->
+            <rect x="340" y="45" width="24" height="125" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="340" y="60" width="24" height="110" fill="var(--primary)"></rect>
+            <text x="352" y="185" text-anchor="middle">16:00</text>
+
+            <!-- H6: 20:00 -->
+            <rect x="410" y="80" width="24" height="90" fill="rgba(99, 102, 241, 0.2)"></rect>
+            <rect x="410" y="95" width="24" height="75" fill="var(--primary)"></rect>
+            <text x="422" y="185" text-anchor="middle">20:00</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Column 2: Client Domains whitelist -->
+      <div class="chart-card">
+        <h3 class="chart-title">Whitelisted Domain Registry</h3>
+        <p style="margin: 0; font-size: 0.85rem; color: var(--text-gray);">
+          Client URLs currently authorized by the dynamic database check:
+        </p>
+        
+        <div class="domains-list">
+          <div class="domain-row">
+            <span class="domain-name">localhost:5500</span>
+            <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Frontend Server</span>
+          </div>
+          <div class="domain-row">
+            <span class="domain-name">localhost:3000</span>
+            <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">React App</span>
+          </div>
+          <div class="domain-row">
+            <span class="domain-name">localhost:8000</span>
+            <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">FastAPI Docs</span>
+          </div>
+          <div class="domain-row">
+            <span class="domain-name">dynamic-client.lk</span>
+            <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 6px; border-radius: 4px;">SaaS Checkout</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 SS Labz. All rights reserved.
+  </footer>
+
+  <script>
+    // Dynamically query API health to fetch current whitelisted count
+    async function queryActiveWhitelist() {
+      try {
+        const response = await fetch('http://localhost:8000/health');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.dynamic_whitelist_count) {
+            document.getElementById('whitelisted-counter').textContent = data.dynamic_whitelist_count + ' Domains';
+            document.getElementById('whitelist-subtext').textContent = 'SQLite dynamic rows verified';
+          }
+        }
+      } catch (e) {
+        console.warn('API backend not available to fetch dynamic whitelist size.', e);
+      }
+    }
+    
+    // Trigger on startup
+    window.addEventListener('DOMContentLoaded', queryActiveWhitelist);
+  </script>
+</body>
+</html>

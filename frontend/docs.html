@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Portal - Developer Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.05);
+      --code-bg: #030712;
+      --accent-sky: #38bdf8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.7);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #c7d2fe 0%, #818cf8 50%, #4f46e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      stroke: #818cf8;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-gray);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-white);
+    }
+
+    /* Dual pane docs layout */
+    .docs-container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 20px;
+      box-sizing: border-box;
+      gap: 40px;
+    }
+
+    @media (max-width: 800px) {
+      .docs-container {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+      .docs-sidebar {
+        display: none;
+      }
+    }
+
+    .docs-sidebar {
+      position: sticky;
+      top: 100px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .sidebar-link {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text-white);
+    }
+
+    .docs-content {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+      max-width: 800px;
+    }
+
+    .docs-group {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .docs-section {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      padding-bottom: 28px;
+    }
+
+    .docs-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    h2.group-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 40px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .docs-group:first-child h2.group-title {
+      margin-top: 0;
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+      color: #f8fafc;
+    }
+
+    p {
+      color: #cbd5e1;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin: 0 0 16px 0;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: var(--code-bg);
+      color: #38bdf8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    pre code {
+      padding: 0;
+      background: none;
+      color: #f8fafc;
+      font-size: 0.85rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(255,255,255,0.02);
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    td strong {
+      color: #f8fafc;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 30px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <span>SS Labz Portal</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Dashboard</a>
+      <a href="widget-demo.html" class="nav-link">Widgets</a>
+      <a href="analytics.html" class="nav-link">Analytics</a>
+      <a href="docs.html" class="nav-link active">Docs</a>
+    </nav>
+  </header>
+
+  <div class="docs-container">
+    <!-- Sidebar Navigation -->
+    <aside class="docs-sidebar">
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Getting Started</h4>
+        <a href="#quickstart" class="sidebar-link">Quick Start</a>
+        <a href="#whitelisting" class="sidebar-link">CORS Whitelisting</a>
+      </div>
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Frontend Reference</h4>
+        <a href="#attributes" class="sidebar-link">Component Attributes</a>
+        <a href="#styling" class="sidebar-link">CSS Custom Variables</a>
+      </div>
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Proxy API Reference</h4>
+        <a href="#endpoints" class="sidebar-link">REST Endpoints</a>
+      </div>
+    </aside>
+
+    <!-- Reading Pane -->
+    <main class="docs-content">
+      
+      <!-- Group 1: Getting Started -->
+      <div class="docs-group">
+        <h2 class="group-title">Getting Started</h2>
+
+        <!-- Section 1.1: Quick start -->
+        <section class="docs-section" id="quickstart">
+          <h3>Quick Start</h3>
+          <p>
+            Integrate the currency converter widget in minutes. Load the Javascript code bundle and use the custom HTML element tag.
+          </p>
+          <pre><code>&lt;!-- 1. Include script at the bottom of the body --&gt;
+&lt;script src="widget.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Inject component tag anywhere --&gt;
+&lt;currency-converter 
+  api-url="http://localhost:8000"
+  default-base="USD"
+  default-target="auto"&gt;
+&lt;/currency-converter&gt;</code></pre>
+        </section>
+
+        <!-- Section 1.2: CORS whitelisting -->
+        <section class="docs-section" id="whitelisting">
+          <h3>CORS Whitelisting</h3>
+          <p>
+            The proxy backend enforces client security. Inbound HTTP requests from client domains must be registered in the whitelisting database, or else browsers will block access due to CORS restrictions.
+          </p>
+          <p>
+            To register a new domain origin dynamically, send a `POST` request to `/whitelist` using the correct authorization header:
+          </p>
+          <pre><code>curl -X POST http://localhost:8000/whitelist \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Token: admin_secret" \
+  -d '{"origin": "https://boutiquehotel.lk", "client_name": "Boutique Hotel Colombo"}'</code></pre>
+        </section>
+      </div>
+
+      <!-- Group 2: Frontend Reference -->
+      <div class="docs-group">
+        <h2 class="group-title">Frontend Reference</h2>
+
+        <!-- Section 2.1: Component attributes -->
+        <section class="docs-section" id="attributes">
+          <h3>Component Attributes API</h3>
+          <p>
+            Configure the Custom Element behaviour directly via standard HTML attributes:
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Attribute</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Default</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>api-url</code></td>
+                <td>String</td>
+                <td>The baseline domain of your proxy backend.</td>
+                <td><code>"http://localhost:8000"</code></td>
+              </tr>
+              <tr>
+                <td><code>theme</code></td>
+                <td>String</td>
+                <td>Presets: <code>dark</code>, <code>light</code>, <code>glass</code>, or <code>midnight</code>.</td>
+                <td><code>"dark"</code></td>
+              </tr>
+              <tr>
+                <td><code>default-amount</code></td>
+                <td>Number</td>
+                <td>Starting value inside the amount input field.</td>
+                <td><code>100</code></td>
+              </tr>
+              <tr>
+                <td><code>default-base</code></td>
+                <td>String</td>
+                <td>Base currency (e.g. <code>USD</code>, <code>EUR</code>, <code>GBP</code>).</td>
+                <td><code>"USD"</code></td>
+              </tr>
+              <tr>
+                <td><code>default-target</code></td>
+                <td>String</td>
+                <td>Target currency code. Set to <code>"auto"</code> to geolocate.</td>
+                <td><code>"auto"</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Section 2.2: Styling customizable properties -->
+        <section class="docs-section" id="styling">
+          <h3>CSS Custom Variables</h3>
+          <p>
+            Custom properties let client developers style the widget to match their layout color schemes:
+          </p>
+          <pre><code>currency-converter {
+  --converter-primary: #ec4899;        /* Hover outlines and focus rings */
+  --converter-primary-hover: #db2777;  /* Hover button backgrounds */
+  --converter-bg: #1e1b4b;             /* Core background color */
+  --converter-border: rgba(255,255,255,0.1); /* Dividers and boxes */
+  --converter-radius: 20px;            /* Rounded corners */
+  --converter-text-primary: #fdf2f8;   /* Core text color */
+}</code></pre>
+        </section>
+      </div>
+
+      <!-- Group 3: Proxy API Reference -->
+      <div class="docs-group">
+        <h2 class="group-title">Proxy API Reference</h2>
+
+        <!-- Section 3.1: API routes endpoints -->
+        <section class="docs-section" id="endpoints">
+          <h3>Proxy REST Endpoints</h3>
+          <p>
+            The FastAPI proxy backend exposes the following paths:
+          </p>
+          <ul>
+            <li><strong><code>GET /convert?base={USD}&target={EUR}&amount={100}</code></strong>: Calculates conversions.</li>
+            <li><strong><code>GET /history?base={USD}&target={EUR}</code></strong>: Returns the 7-day conversion rate timeline.</li>
+            <li><strong><code>POST /whitelist</code></strong>: Inserts dynamic client origins. Requires <code>X-Admin-Token</code> header.</li>
+            <li><strong><code>GET /health</code></strong>: System health check.</li>
+          </ul>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2026 SS Labz. All rights reserved.
+  </footer>
+</body>
+</html>

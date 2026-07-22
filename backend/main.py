@@ -33,7 +33,7 @@ ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS_STR.split(",") i
 DB_PATH = "database.db"
 
 app = FastAPI(
-    title="Antigravity Currency Proxy API",
+    title="SS Labz Currency Proxy API",
     description="A secure and cached proxy API with dynamic whitelisting",
     version="1.2.0"
 )

@@ -1,9 +1,9 @@
-# Antigravity Currency Converter Widget
+# SS Labz Currency Converter Widget
 
 A secure, isolated, and embeddable B2B currency converter widget designed for websites, hotel portals, and dashboards. 
 
 This project is structured in two parts:
-1. **FastAPI Proxy Backend**: Handles currency rates, implements Time-to-Live (TTL) in-memory caching to save operational costs, and enforces domain whitelisting (CORS) to safeguard endpoints.
+1. **FastAPI Proxy Backend**: Handles currency rates, implements Time-to-Live (TTL) in-memory caching to save operational costs, and enforces domain whitelisting (CORS) against an SQLite database to safeguard endpoints.
 2. **Vanilla Web Component Frontend**: A completely self-contained Custom Element utilizing the Shadow DOM to isolate styles and prevent collisions with the host page. Features presets, custom theme override, and a dynamic Bezier spline trend chart.
 
 ---
@@ -13,9 +13,10 @@ This project is structured in two parts:
 - **Isolated Styling**: Encapsulated styling guarantees that host page styles (like Bootstrap, Tailwind, or WordPress layouts) will never break the widget.
 - **Theme Presets**: Ready-to-use themes: `dark` (default), `light`, `glass`, and `midnight`.
 - **CSS Branding Override**: Exposes CSS Custom Properties for deep styling customization (colors, borders, shadows) from the parent page.
-- **Auto-Location Detection**: Automatically geolocates the visitor's IP address and sets the target currency to their national currency.
+- **Auto-Location Detection**: Automatically geolocates the visitor's IP address and sets the target currency to their national currency (stored in 24-hour browser `localStorage` cache).
 - **Interactive 7-Day Trend Chart**: An accordion drawer at the bottom of the card expands to show a glowing Bezier spline trend curve generated dynamically via SVG.
 - **Intelligent Caching proxy**: Reduces upstream API key usage by caching baseline conversion rates (2 hours) and historical ranges (12 hours) in memory.
+- **Dynamic Whitelisting via Database**: Resolves B2B client CORS requests dynamically against a local SQLite database, allowing on-the-fly origin registrations without restarting services.
 
 ---
 
@@ -23,13 +24,17 @@ This project is structured in two parts:
 
 ```text
 ├── backend/
-│   ├── main.py            # FastAPI proxy server, caching, and endpoints
+│   ├── main.py            # FastAPI proxy server, caches, and SQLite CORS middleware
 │   ├── requirements.txt   # Python dependency declarations
 │   ├── Dockerfile         # Backend container definition
+│   ├── database.db        # SQLite whitelisting domain registry
 │   └── test_proxy.py      # Integration testing script
 ├── frontend/
 │   ├── widget.js          # Encapsulated Web Component source
-│   └── index.html         # B2B Portal integration demonstration page
+│   ├── index.html         # Dashboard & Themes preview portal
+│   ├── widget-demo.html   # Widget integrations in mock checkout/booking cards
+│   ├── analytics.html     # Caching analytics and SVG traffic bar chart
+│   └── docs.html          # Split-pane developer manuals
 ├── docker-compose.yml     # Multi-container orchestration tool
 └── README.md              # Documentation
 ```
@@ -81,7 +86,8 @@ Create a `.env` file in the `backend/` directory or pass these variables to your
 | :--- | :--- | :--- |
 | `EXCHANGE_RATE_API_KEY` | Optional. Upstream ExchangeRate-API Key. Falls back to Free Open API if blank. | `""` (Open API) |
 | `CACHE_TTL_SECONDS` | TTL for currency rate caching (seconds). | `7200` (2 Hours) |
-| `ALLOWED_ORIGINS` | Comma-separated list of whitelisted B2B client domains. | Localhost hosts |
+| `ALLOWED_ORIGINS` | Comma-separated list of fallback whitelisted B2B client domains. | Localhost hosts |
+| `ADMIN_SECRET_TOKEN` | Administration API key to authenticate whitelisting edits. | `"admin_secret"` |
 
 ---
 
@@ -89,7 +95,6 @@ Create a `.env` file in the `backend/` directory or pass these variables to your
 
 ### 1. Conversion Rate
 `GET /convert?base={curr}&target={curr}&amount={val}`
-- **Parameters**: `base` (3 letters), `target` (3 letters), `amount` (number > 0)
 - **Response**:
   ```json
   {
@@ -105,22 +110,22 @@ Create a `.env` file in the `backend/` directory or pass these variables to your
 
 ### 2. Historical Rate Range
 `GET /history?base={base}&target={target}`
-- **Response**: Returns a 7-day conversion rate timeline. Falls back deterministically to random-walk estimations if currency isn't supported by the historical provider.
+- **Response**: Returns a 7-day conversion rate timeline. Falls back deterministically to random-walk curves if currency isn't supported by the historical provider.
+
+### 3. Dynamic CORS Domain Registration
+`POST /whitelist`
+- **Headers**: `X-Admin-Token: <ADMIN_SECRET_TOKEN>`
+- **Payload**:
   ```json
   {
-    "base": "USD",
-    "target": "EUR",
-    "history": [
-      {"date": "2026-07-15", "rate": 0.8751},
-      ...
-      {"date": "2026-07-22", "rate": 0.8767}
-    ],
-    "is_mock": false
+    "origin": "http://dynamic-client.lk",
+    "client_name": "Dynamic Boutique Checkout"
   }
   ```
 
-### 3. Server Health
+### 4. Server Health & Database Metrics
 `GET /health`
+- **Response**: Reports caching configurations and active whitelisted client count.
 
 ---
 
@@ -164,6 +169,16 @@ currency-converter.my-brand-theme {
   --converter-shadow: 0 10px 30px rgba(236, 72, 153, 0.25);
 }
 ```
+
+---
+
+## Multi-Page B2B Portal
+
+The frontend folder contains a complete multi-page portal layout demonstrating SS Labz integrations:
+- **`index.html` (Dashboard)**: Showcases five preconfigured widget visual configurations side-by-side.
+- **`widget-demo.html` (Widgets Demo)**: Embeds independent widgets in mock payment pages, hotel booking cards, and expense summaries.
+- **`analytics.html` (Analytics Page)**: Dynamically checks FastAPI server endpoints and outputs real-time cache rates and custom SVG hourly request graphs.
+- **`docs.html` (Developer Documentation)**: A dual-pane user guide highlighting quick integration steps, attribute APIs, and CLI commands.
 
 ---
 
