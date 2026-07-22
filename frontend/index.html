@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Portal - Embeddable Widget Demo & Themes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.7);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #c7d2fe 0%, #818cf8 50%, #4f46e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      stroke: #818cf8;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-gray);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-white);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .hero-section {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero-section {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+
+    .badge {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      align-self: flex-start;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.lead {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text-gray);
+      margin: 0;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .integration-code {
+      background: #04060a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin-top: 12px;
+      white-space: pre-wrap;
+    }
+
+    .showcase-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
+      margin-top: 20px;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .widget-container-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .widget-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+
+    /* Dynamic visual wrapper showing off the glass theme on a background */
+    .glass-demo-wrapper {
+      background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Custom Style Customization Overrides */
+    .brand-custom-widget {
+      --converter-primary: #ec4899;
+      --converter-primary-hover: #db2777;
+      --converter-bg: #1e1b4b;
+      --converter-border: rgba(236, 72, 153, 0.2);
+      --converter-radius: 24px;
+      --converter-text-primary: #fdf2f8;
+      --converter-text-secondary: #fbcfe8;
+      --converter-shadow: 0 10px 30px -5px rgba(236, 72, 153, 0.3);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 30px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <span>Antigravity Portal</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="nav-link active">Dashboard</a>
+      <a href="#" class="nav-link">Widgets</a>
+      <a href="#" class="nav-link">Analytics</a>
+      <a href="#" class="nav-link">Docs</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero-section">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <div class="badge">Theme Customization Demo</div>
+          <h1>
+            Embeddable <span class="hero-gradient">Isolated Currency Widget</span>
+          </h1>
+        </div>
+        <p class="lead">
+          This portal demonstrates how the currency converter widget encapsulates its styling and network requests. You can easily embed it onto client sites, booking engines, or dashboards without worrying about styling collisions.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">How to Integrate</h3>
+        <p style="color: var(--text-gray); font-size: 0.9rem; margin: 0 0 10px 0;">
+          Include our minified script and configure options or theme classes via HTML attributes:
+        </p>
+        <div class="integration-code">
+&lt;!-- Load Script --&gt;
+&lt;script src="widget.js"&gt;&lt;/script&gt;
+
+&lt;!-- Use standard theme (dark, light, glass, midnight) --&gt;
+&lt;currency-converter theme="light" api-url="http://localhost:8000"&gt;&lt;/currency-converter&gt;</div>
+      </div>
+    </div>
+
+    <div class="showcase-header">
+      <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600; margin: 0;">Preconfigured Presets & Customizable Styles</h2>
+    </div>
+
+    <div class="showcase-grid">
+      <!-- 1. Dark Theme -->
+      <div class="widget-container-box">
+        <div class="widget-label">Dark Presets (Default)</div>
+        <currency-converter 
+          api-url="http://localhost:8000" 
+          theme="dark"
+          default-amount="100" 
+          default-base="USD" 
+          default-target="EUR">
+        </currency-converter>
+      </div>
+
+      <!-- 2. Light Theme -->
+      <div class="widget-container-box">
+        <div class="widget-label">Light Presets</div>
+        <currency-converter 
+          api-url="http://localhost:8000" 
+          theme="light"
+          default-amount="100" 
+          default-base="EUR" 
+          default-target="GBP">
+        </currency-converter>
+      </div>
+
+      <!-- 3. Midnight Blue Theme -->
+      <div class="widget-container-box">
+        <div class="widget-label">Midnight Preset</div>
+        <currency-converter 
+          api-url="http://localhost:8000" 
+          theme="midnight"
+          default-amount="100" 
+          default-base="USD" 
+          default-target="JPY">
+        </currency-converter>
+      </div>
+
+      <!-- 4. Glass Theme -->
+      <div class="widget-container-box">
+        <div class="widget-label">Glass Preset</div>
+        <div class="glass-demo-wrapper">
+          <currency-converter 
+            api-url="http://localhost:8000" 
+            theme="glass"
+            default-amount="100" 
+            default-base="GBP" 
+            default-target="USD">
+          </currency-converter>
+        </div>
+      </div>
+
+      <!-- 5. Brand Custom variables overrides -->
+      <div class="widget-container-box">
+        <div class="widget-label">Custom CSS Overrides (Hot Pink)</div>
+        <currency-converter 
+          class="brand-custom-widget"
+          api-url="http://localhost:8000" 
+          theme="dark"
+          default-amount="100" 
+          default-base="USD" 
+          default-target="LKR">
+        </currency-converter>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 Antigravity Labs. All rights reserved.
+  </footer>
+
+  <!-- Include Widget Script -->
+  <script src="widget.js"></script>
+</body>
+</html>
