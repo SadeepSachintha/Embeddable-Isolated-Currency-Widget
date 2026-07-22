@@ -30,6 +30,11 @@ ALLOWED_ORIGINS_STR = os.getenv(
     "http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5500,http://127.0.0.1:5500"
 )
 ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS_STR.split(",") if origin.strip()]
+
+# Hybrid Database configurations
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+IS_POSTGRES = bool(DATABASE_URL)
+PLACEHOLDER = "%s" if IS_POSTGRES else "?"
 DB_PATH = "database.db"
 
 app = FastAPI(
@@ -38,11 +43,20 @@ app = FastAPI(
     version="1.2.0"
 )
 
-# SQLite whitelist database initialization
+def get_db_connection():
+    if IS_POSTGRES:
+        import psycopg2
+        return psycopg2.connect(DATABASE_URL)
+    else:
+        return sqlite3.connect(DB_PATH, timeout=30.0)
+
+# Database initialization
 def init_db():
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Primary key table creation (works on both SQLite and PostgreSQL)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS whitelist (
                 origin TEXT PRIMARY KEY,
@@ -51,7 +65,7 @@ def init_db():
             )
         """)
         
-        # Seed database with initial default CORS origins if empty
+        # Seed default origins if table is empty
         cursor.execute("SELECT COUNT(*) FROM whitelist")
         if cursor.fetchone()[0] == 0:
             logger.info("Initializing whitelist database with default origins...")
@@ -63,7 +77,8 @@ def init_db():
                 ("http://localhost:5500", "Frontend Dev Server", datetime.utcnow().isoformat()),
                 ("http://127.0.0.1:5500", "Frontend Dev Server", datetime.utcnow().isoformat()),
             ]
-            cursor.executemany("INSERT INTO whitelist VALUES (?, ?, ?)", default_origins)
+            insert_query = f"INSERT INTO whitelist (origin, client_name, created_at) VALUES ({PLACEHOLDER}, {PLACEHOLDER}, {PLACEHOLDER})"
+            cursor.executemany(insert_query, default_origins)
             conn.commit()
             
         conn.close()
@@ -75,21 +90,20 @@ def init_db():
 def startup_event():
     init_db()
 
-# Custom Dynamic CORSMiddleware subclass checking origins against SQLite database
+# Custom Dynamic CORSMiddleware subclass checking origins against database
 class DynamicCORSMiddleware(CORSMiddleware):
     def is_allowed_origin(self, origin: str) -> bool:
-        # Check SQLite db
         try:
-            conn = sqlite3.connect(DB_PATH)
+            conn = get_db_connection()
             cursor = conn.cursor()
-            # Wildcard '*' whitelist override check
-            cursor.execute("SELECT 1 FROM whitelist WHERE origin = ? OR origin = '*'", (origin,))
+            query = f"SELECT 1 FROM whitelist WHERE origin = {PLACEHOLDER} OR origin = '*'"
+            cursor.execute(query, (origin.lower(),))
             allowed = cursor.fetchone() is not None
             conn.close()
             if allowed:
                 return True
         except Exception as e:
-            logger.error(f"Error reading SQLite whitelist: {e}")
+            logger.error(f"Error reading whitelist: {e}")
             
         # Fallback to local static configurations list
         return origin in self.allow_origins
@@ -339,38 +353,42 @@ def add_origin_to_whitelist(
         raise HTTPException(status_code=400, detail="Origin cannot be empty.")
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
+        query = f"INSERT INTO whitelist (origin, client_name, created_at) VALUES ({PLACEHOLDER}, {PLACEHOLDER}, {PLACEHOLDER})"
         cursor.execute(
-            "INSERT INTO whitelist (origin, client_name, created_at) VALUES (?, ?, ?)",
+            query,
             (origin, client_name, datetime.utcnow().isoformat())
         )
         conn.commit()
         conn.close()
         logger.info(f"Dynamically whitelisted origin: {origin} ({client_name})")
         return {"status": "success", "message": f"Origin {origin} added to whitelist."}
-    except sqlite3.IntegrityError:
-        raise HTTPException(status_code=400, detail=f"Origin {origin} already whitelisted.")
     except Exception as e:
+        err_msg = str(e).lower()
+        if "unique" in err_msg or "integrity" in err_msg or "already exists" in err_msg:
+            raise HTTPException(status_code=400, detail=f"Origin {origin} already whitelisted.")
         logger.error(f"Whitelist DB insertion error: {e}")
         raise HTTPException(status_code=500, detail="Database write error.")
 
 @app.get("/health")
 def health_check():
-    # Return count of whitelisted origins in db
     whitelist_count = 0
+    db_type = "sqlite"
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM whitelist")
         whitelist_count = cursor.fetchone()[0]
         conn.close()
+        db_type = "postgresql" if IS_POSTGRES else "sqlite"
     except Exception:
         pass
 
     return {
         "status": "healthy",
         "cache_ttl_seconds": CACHE_TTL,
+        "database_type": db_type,
         "origins_allowed_static": ALLOWED_ORIGINS,
         "dynamic_whitelist_count": whitelist_count
     }

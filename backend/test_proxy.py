@@ -1,5 +1,6 @@
 import httpx
 import sys
+import random
 
 def test_health():
     try:
@@ -9,6 +10,7 @@ def test_health():
         print(data)
         assert response.status_code == 200
         assert "dynamic_whitelist_count" in data
+        assert data["database_type"] in ["sqlite", "postgresql"]
         print("Health Check PASSED")
     except Exception as e:
         print(f"Health check failed: {e}")
@@ -66,10 +68,11 @@ def test_dynamic_whitelist():
         initial_count = response.json().get("dynamic_whitelist_count", 0)
         print(f"\nInitial Whitelisted Count in DB: {initial_count}")
 
-        # Post new origin
-        new_origin = "http://dynamic-client.lk"
+        # Post new origin (randomized to make test idempotent)
+        rand_id = random.randint(1000, 9999)
+        new_origin = f"http://dynamic-client-{rand_id}.lk"
         headers = {"X-Admin-Token": "admin_secret"}
-        payload = {"origin": new_origin, "client_name": "Dynamic Boutique Client"}
+        payload = {"origin": new_origin, "client_name": f"Dynamic Boutique Client {rand_id}"}
         res = httpx.post("http://127.0.0.1:8000/whitelist", json=payload, headers=headers)
         print(f"Whitelist insert response: {res.status_code} - {res.json()}")
         assert res.status_code == 201
