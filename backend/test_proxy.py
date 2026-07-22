@@ -5,8 +5,10 @@ def test_health():
     try:
         response = httpx.get("http://127.0.0.1:8000/health")
         print("Health Check Response:")
-        print(response.json())
+        data = response.json()
+        print(data)
         assert response.status_code == 200
+        assert "dynamic_whitelist_count" in data
         print("Health Check PASSED")
     except Exception as e:
         print(f"Health check failed: {e}")
@@ -32,7 +34,6 @@ def test_convert():
 
 def test_history():
     try:
-        # Test pair (USD -> EUR) - may resolve to mock due to simulated future system dates (2026)
         response = httpx.get("http://127.0.0.1:8000/history?base=USD&target=EUR")
         print("\nHistory Endpoint Response (USD -> EUR):")
         data = response.json()
@@ -44,7 +45,6 @@ def test_history():
         assert isinstance(data["is_mock"], bool)
         print("USD -> EUR history check PASSED")
 
-        # Test unsupported fallback pair (USD -> LKR) - guaranteed to be mock
         response_lkr = httpx.get("http://127.0.0.1:8000/history?base=USD&target=LKR")
         print("\nHistory Endpoint Response (USD -> LKR):")
         data_lkr = response_lkr.json()
@@ -59,8 +59,50 @@ def test_history():
         print(f"History endpoint test failed: {e}")
         sys.exit(1)
 
+def test_dynamic_whitelist():
+    try:
+        # Get count
+        response = httpx.get("http://127.0.0.1:8000/health")
+        initial_count = response.json().get("dynamic_whitelist_count", 0)
+        print(f"\nInitial Whitelisted Count in DB: {initial_count}")
+
+        # Post new origin
+        new_origin = "http://dynamic-client.lk"
+        headers = {"X-Admin-Token": "admin_secret"}
+        payload = {"origin": new_origin, "client_name": "Dynamic Boutique Client"}
+        res = httpx.post("http://127.0.0.1:8000/whitelist", json=payload, headers=headers)
+        print(f"Whitelist insert response: {res.status_code} - {res.json()}")
+        assert res.status_code == 201
+
+        # Check count increased
+        response_after = httpx.get("http://127.0.0.1:8000/health")
+        after_count = response_after.json().get("dynamic_whitelist_count", 0)
+        print(f"New Whitelisted Count in DB: {after_count}")
+        assert after_count == initial_count + 1
+
+        # Check Origin Allowed CORS headers
+        cors_headers = {"Origin": new_origin}
+        res_cors = httpx.get("http://127.0.0.1:8000/health", headers=cors_headers)
+        allow_origin = res_cors.headers.get("access-control-allow-origin")
+        print(f"CORS Origin validation for '{new_origin}': {allow_origin}")
+        assert allow_origin == new_origin
+
+        # Check Malicious Origin CORS is blocked
+        blocked_origin = "http://malicious-site.com"
+        blocked_headers = {"Origin": blocked_origin}
+        res_blocked = httpx.get("http://127.0.0.1:8000/health", headers=blocked_headers)
+        blocked_allow = res_blocked.headers.get("access-control-allow-origin")
+        print(f"CORS Origin validation for blocked '{blocked_origin}': {blocked_allow}")
+        assert blocked_allow is None
+
+        print("Dynamic Whitelisting and CORS Check PASSED")
+    except Exception as e:
+        print(f"Dynamic Whitelisting test failed: {e}")
+        sys.exit(1)
+
 if __name__ == "__main__":
     test_health()
     test_convert()
     test_history()
+    test_dynamic_whitelist()
     print("\nAll integration checks PASSED!")
