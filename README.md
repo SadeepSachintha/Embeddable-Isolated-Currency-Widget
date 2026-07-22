@@ -35,6 +35,7 @@ This project is structured in two parts:
 │   ├── widget-demo.html   # Widget integrations in mock checkout/booking cards
 │   ├── analytics.html     # Caching analytics and SVG traffic bar chart
 │   └── docs.html          # Split-pane developer manuals
+├── Embeddable-Currency-Converter-Widget-Integration.md # Checkout integration & presentation manual
 ├── docker-compose.yml     # Multi-container orchestration tool
 └── README.md              # Documentation
 ```

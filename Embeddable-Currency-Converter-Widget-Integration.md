@@ -1,5 +1,5 @@
-# Project Integration & Viva Cheat Sheet: B2B Currency Widget
-Use this guide to explain the architecture, implementation choices, and integration steps of the currency converter widget for your Hotel Management System viva/presentation.
+# Embeddable Currency Converter Widget Integration Guide
+This guide provides the complete documentation to integrate, configure, and explain the architecture of the SS Labz Currency Converter Widget for your hotel portal, booking app, or presentation.
 
 ---
 
@@ -23,7 +23,7 @@ This project is an **Enterprise-Grade, Isolated Currency Conversion Tool**. Inst
                                                 └──────────────────────────────────┘
 ```
 
-### Key Technical Talking Points for Examiners:
+### Key Technical Architecture Points:
 1. **Shadow DOM Encapsulation**: The widget styling is isolated from the host page. No matter what custom styles or CSS resets are used in the parent Hotel System (e.g., Bootstrap, Tailwind, custom styles), they will not leak in, nor will the widget styles break the hotel checkout layout.
 2. **Caching Proxy Backend**: To avoid hitting API key limits and running up developer costs, a FastAPI backend acts as a proxy. It caches currency conversion results for **2 hours** and historical data for **12 hours** in memory.
 3. **Dynamic CORS Whitelisting**: Secures your API. B2B client sites must be whitelisted in the SQLite/PostgreSQL database to prevent copycats from stealing your API backend limits.
@@ -79,7 +79,7 @@ To integrate the currency options into your **Room Booking Confirmation** page, 
 
 ---
 
-## 3. High-Frequency Viva Questions & Answers
+## 3. Core Architectural Questions & Answers
 
 ### Q1: How does "Shadow DOM" prevent styling conflicts?
 > **Answer**: The Shadow DOM allows a component to have its own isolated DOM subtree. Global CSS stylesheets on the host page cannot select elements inside the Shadow Root, and styles declared inside the Shadow Root do not leak out. This makes the component fully portable and "style-safe".
