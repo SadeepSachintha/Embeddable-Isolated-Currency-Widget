@@ -448,7 +448,15 @@
       #trend-svg .grid-line {
         stroke: var(--border-glass);
         stroke-width: 0.8;
+        stroke-opacity: 0.5;
         stroke-dasharray: 2,4;
+      }
+
+      #trend-svg .anchor-line {
+        stroke: var(--border-glass);
+        stroke-width: 0.8;
+        stroke-opacity: 0.3;
+        stroke-dasharray: 1,3;
       }
       
       #trend-svg .axis-label {
@@ -798,13 +806,33 @@
         return { x, y, date: p.date, rate: p.rate };
       });
 
-      // SVG Definitions (gradient defs)
+      // SPLINE SMOOTHING ALGORITHM (Opposed-line tangents)
+      const controlPoint = (current, previous, next, reverse) => {
+        const p = previous || current;
+        const n = next || current;
+        const smoothing = 0.15; // Smooth curve factor
+        
+        const lengthX = n.x - p.x;
+        const lengthY = n.y - p.y;
+        
+        const angle = Math.atan2(lengthY, lengthX) + (reverse ? Math.PI : 0);
+        const length = Math.sqrt(lengthX * lengthX + lengthY * lengthY) * smoothing;
+        
+        const x = current.x + Math.cos(angle) * length;
+        const y = current.y + Math.sin(angle) * length;
+        return [x, y];
+      };
+
+      // SVG Definitions (gradient defs & filters)
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
       defs.innerHTML = `
         <linearGradient id="chart-gradient-${this.fromSelect.value}-${this.toSelect.value}" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.25"></stop>
           <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop>
         </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="var(--primary)" flood-opacity="0.2"></feDropShadow>
+        </filter>
       `;
       svg.appendChild(defs);
 
@@ -822,16 +850,26 @@
         svg.appendChild(line);
       }
 
-      // Generate polyline paths
-      let dLine = '';
-      let dArea = `M ${points[0].x} ${padding.top + chartH} `;
-
-      points.forEach((pt, idx) => {
-        const cmd = idx === 0 ? 'M' : 'L';
-        dLine += `${cmd} ${pt.x} ${pt.y} `;
-        dArea += `L ${pt.x} ${pt.y} `;
+      // Vertical anchor reference grid lines for data points
+      points.forEach((pt) => {
+        const anchor = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        anchor.setAttribute('x1', pt.x);
+        anchor.setAttribute('y1', padding.top);
+        anchor.setAttribute('x2', pt.x);
+        anchor.setAttribute('y2', padding.top + chartH);
+        anchor.setAttribute('class', 'anchor-line');
+        svg.appendChild(anchor);
       });
-      dArea += `L ${points[points.length - 1].x} ${padding.top + chartH} Z`;
+
+      // Generate smooth bezier curve path coordinates
+      let dLine = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const cp1 = controlPoint(points[i], points[i-1], points[i+1], false);
+        const cp2 = controlPoint(points[i+1], points[i], points[i+2], true);
+        dLine += ` C ${cp1[0]} ${cp1[1]}, ${cp2[0]} ${cp2[1]}, ${points[i+1].x} ${points[i+1].y}`;
+      }
+      
+      const dArea = `${dLine} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
       // Render Area under curve
       const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -847,9 +885,10 @@
       linePath.setAttribute('stroke-width', '2.5');
       linePath.setAttribute('stroke-linecap', 'round');
       linePath.setAttribute('stroke-linejoin', 'round');
+      linePath.setAttribute('filter', 'url(#glow)');
       svg.appendChild(linePath);
 
-      // Render dots
+      // Render dot markers on start, middle, end points
       points.forEach((pt, idx) => {
         if (idx === 0 || idx === points.length - 1 || idx === Math.floor(points.length / 2)) {
           const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
